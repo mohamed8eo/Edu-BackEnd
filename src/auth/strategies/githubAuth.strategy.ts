@@ -29,6 +29,7 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
   ) {
     const name = profile.displayName || profile.username || '';
     const email = profile.emails?.[0]?.value;
+    const image = profile.photos?.[0]?.value; // GitHub profile picture
 
     if (!email) {
       throw new Error('Email not provided by GitHub');
@@ -37,7 +38,8 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
     const user = await this.authService.validateGithubUser({
       name,
       email,
-      password: '', // or generate random
+      password: '',
+      image, // Pass the avatar URL
     });
 
     done(null, user);

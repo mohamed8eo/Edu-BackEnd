@@ -29,14 +29,14 @@ export class AuthController {
   }
 
   @Public()
-  @Post('/login')
+  @Post('login')
   async login(@Body() loginUser: LoginUserDto) {
     return await this.authService.login(loginUser);
   }
 
   @Public()
   @UseGuards(JwtRefreshAuthGuard)
-  @Post('/sign-out')
+  @Post('sign-out')
   async signOut(
     @CurrentUser() user: JwtUser,
     @CurrentRefreshToken() refresh_token: string,
@@ -46,7 +46,7 @@ export class AuthController {
 
   @Public()
   @UseGuards(JwtRefreshAuthGuard)
-  @Post('/refresh')
+  @Post('refresh')
   async RefreshToken(
     @CurrentUser() user: JwtUser,
     @CurrentRefreshToken() refresh_token: string,

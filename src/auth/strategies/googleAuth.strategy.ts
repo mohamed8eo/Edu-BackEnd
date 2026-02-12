@@ -29,6 +29,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     const firstName = profile.name?.givenName ?? '';
     const lastName = profile.name?.familyName ?? '';
     const email = profile.emails?.[0]?.value;
+    const image = profile.photos?.[0]?.value; // Get the profile picture URL
 
     if (!email) {
       throw new Error('Email not provided by Google');
@@ -38,7 +39,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       name: `${firstName} ${lastName}`.trim(),
       email,
       password: '', // or generate random
+      image, // Pass the avatar URL
     });
+
     done(null, user);
   }
 }

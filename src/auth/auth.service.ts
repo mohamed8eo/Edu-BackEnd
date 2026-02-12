@@ -15,6 +15,8 @@ import refreshTokenConfig from './config/refreshToken.config';
 import type { ConfigType } from '@nestjs/config';
 import { and, eq, gt } from 'drizzle-orm';
 import type { JwtUser } from './types/jwtUser';
+import cloudinary from ' cloudinary.config';
+import { CreateUserOAuthDto } from './dto/CreateUserOAuth.dto';
 type DbUser = typeof user.$inferSelect;
 @Injectable()
 export class AuthService {
@@ -29,6 +31,7 @@ export class AuthService {
     const hashPassword = await argon2.hash(password);
 
     try {
+      // 1. Create user first to get the ID
       const [userInfo] = await db
         .insert(user)
         .values({
@@ -38,33 +41,53 @@ export class AuthService {
         })
         .returning();
 
+      // 2. Generate avatar and upload to Cloudinary using the user ID
+      const dicebearUrl = `https://api.dicebear.com/9.x/pixel-art/svg?seed=${encodeURIComponent(email)}`;
+      const svgData = await fetch(dicebearUrl).then((res) => res.text());
+      const uploaded = await cloudinary.uploader.upload(
+        `data:image/svg+xml;base64,${Buffer.from(svgData).toString('base64')}`,
+        {
+          folder: 'avatars',
+          public_id: userInfo.id, // Now we have the user ID
+          overwrite: true,
+          resource_type: 'image',
+        },
+      );
+      const avatarUrl = uploaded.secure_url;
+
+      // 3. Update user with avatar URL
+      await db
+        .update(user)
+        .set({ image: avatarUrl }) // assuming you have an 'avatar' column
+        .where(eq(user.id, userInfo.id));
+
+      // 4. Generate tokens
       const accessPayload: JwtAuthPaylod = {
         sub: userInfo.id,
         email: userInfo.email,
-        type: 'access', // clearly marks this as access token
+        type: 'access',
       };
-
       const refreshPayload: JwtAuthPaylod = {
         sub: userInfo.id,
         email: userInfo.email,
-        type: 'refresh', // clearly marks this as refresh token
+        type: 'refresh',
       };
       const { refresh_token, hashRefreshToken } =
         await this.generateRefreshToken(refreshPayload);
 
-      //store refresh_token on db
+      // 5. Store refresh token in DB
       await db.insert(refreshToken).values({
         userId: userInfo.id,
         token: hashRefreshToken,
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       });
+
       return {
-        message: 'user CreateSuccessFully !',
+        message: 'User created successfully!',
         accessToken: this.access_token(accessPayload),
         refresh_token,
       };
     } catch (err: any) {
-      // PostgreSQL unique violation
       const code = err.code ?? err?.cause?.code;
       if (code === '23505') {
         throw new ConflictException('Email already exists');
@@ -149,7 +172,7 @@ export class AuthService {
     };
   }
 
-  async validateGoogleUser(googleUser: CreateUserDto) {
+  async validateGoogleUser(googleUser: CreateUserOAuthDto) {
     const [existingUser] = await db
       .select()
       .from(user)
@@ -167,6 +190,7 @@ export class AuthService {
         name: googleUser.name,
         email: googleUser.email,
         password: '', // or random
+        image: googleUser.image,
         role: 'user',
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -175,7 +199,7 @@ export class AuthService {
     return newUser;
   }
 
-  async validateGithubUser(githubUser: CreateUserDto) {
+  async validateGithubUser(githubUser: CreateUserOAuthDto) {
     const [existingUser] = await db
       .select()
       .from(user)
@@ -193,6 +217,7 @@ export class AuthService {
         name: githubUser.name,
         email: githubUser.email,
         password: '', // or random
+        image: githubUser.image,
         role: 'user',
         createdAt: new Date(),
         updatedAt: new Date(),
