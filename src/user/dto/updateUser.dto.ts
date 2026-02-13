@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString, IsUrl } from 'class-validator';
+import { IsEmail, IsOptional, IsString, IsUrl, Length } from 'class-validator';
 
 export class UpdateUserDto {
   @IsString()
@@ -9,6 +9,11 @@ export class UpdateUserDto {
   @IsUrl()
   @IsOptional()
   image: string;
+
+  @IsString()
+  @IsOptional()
+  @Length(2, 13)
+  bio: string;
 
   @IsEmail()
   @IsOptional()

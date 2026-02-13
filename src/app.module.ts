@@ -12,11 +12,14 @@ import {
 } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-ioredis-yet';
 import {
+  seconds,
   ThrottlerGuard,
   ThrottlerModule,
   ThrottlerStorage,
 } from '@nestjs/throttler';
 import type { Cache } from 'cache-manager';
+import { TrafficModule } from './traffic/traffic.module';
+import { CategorieModule } from './categorie/categorie.module';
 
 // Custom Throttler Storage using Cache Manager
 @Injectable()
@@ -60,6 +63,7 @@ class ThrottlerCacheStorage implements ThrottlerStorage {
     }),
     AuthModule,
     UserModule,
+    TrafficModule,
     CacheModule.registerAsync({
       isGlobal: true,
       useFactory: (): CacheModuleOptions => ({
@@ -70,11 +74,12 @@ class ThrottlerCacheStorage implements ThrottlerStorage {
     ThrottlerModule.forRoot({
       throttlers: [
         {
-          ttl: 60000, // 60 seconds in milliseconds
-          limit: 4,
+          ttl: seconds(60), // 60 seconds in milliseconds
+          limit: 100,
         },
       ],
     }),
+    CategorieModule,
   ],
   controllers: [AppController],
   providers: [

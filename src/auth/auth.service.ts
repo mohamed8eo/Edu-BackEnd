@@ -26,7 +26,7 @@ export class AuthService {
     private refreshToken: ConfigType<typeof refreshTokenConfig>,
   ) {}
   async signUp(createUser: CreateUserDto) {
-    const { name, email, password } = createUser;
+    const { name, bio, email, password } = createUser;
     const emailNormalized = email.trim().toLowerCase();
     const hashPassword = await argon2.hash(password);
 
@@ -36,6 +36,7 @@ export class AuthService {
         .insert(user)
         .values({
           name,
+          bio,
           email: emailNormalized,
           password: hashPassword,
         })
@@ -65,11 +66,13 @@ export class AuthService {
       const accessPayload: JwtAuthPaylod = {
         sub: userInfo.id,
         email: userInfo.email,
+        role: userInfo.role,
         type: 'access',
       };
       const refreshPayload: JwtAuthPaylod = {
         sub: userInfo.id,
         email: userInfo.email,
+        role: userInfo.role,
         type: 'refresh',
       };
       const { refresh_token, hashRefreshToken } =
@@ -102,6 +105,7 @@ export class AuthService {
     const [isUserExist] = await db
       .select({
         userId: user.id,
+        role: user.role,
         hashpassword: user.password,
       })
       .from(user)
@@ -121,12 +125,14 @@ export class AuthService {
     const accessPayload: JwtAuthPaylod = {
       sub: isUserExist.userId,
       email: email,
+      role: isUserExist.role,
       type: 'access', // clearly marks this as access token
     };
 
     const refreshPayload: JwtAuthPaylod = {
       sub: isUserExist.userId,
       email: email,
+      role: isUserExist.role,
       type: 'refresh', // clearly marks this as refresh token
     };
 
@@ -260,6 +266,7 @@ export class AuthService {
     const accessPayload: JwtAuthPaylod = {
       sub: user.userId,
       email: user.email,
+      role: user.role,
       type: 'access',
     };
 
@@ -270,6 +277,7 @@ export class AuthService {
       const refreshPayload: JwtAuthPaylod = {
         sub: user.userId,
         email: user.email,
+        role: user.role,
         type: 'refresh',
       };
 
@@ -300,12 +308,14 @@ export class AuthService {
     const accessPayload: JwtAuthPaylod = {
       sub: user.id,
       email: user.email,
+      role: user.role,
       type: 'access',
     };
 
     const refreshPayload: JwtAuthPaylod = {
       sub: user.id,
       email: user.email,
+      role: user.role,
       type: 'refresh',
     };
 
