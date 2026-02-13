@@ -8,7 +8,7 @@ import { JwtAuthPaylod } from '../types/jwtAuth';
 @Injectable()
 export class JwtRefreshToken extends PassportStrategy(
   Strategy,
-  'refreshToken',
+  'refreshTojen',
 ) {
   constructor(
     @Inject(refreshTokenConfig.KEY)

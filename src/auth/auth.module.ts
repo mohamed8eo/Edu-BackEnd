@@ -7,13 +7,13 @@ import accessTokenConfig from './config/accessToken.config';
 import { ConfigModule } from '@nestjs/config';
 import refreshTokenConfig from './config/refreshToken.config';
 import { JwtAccesstoken } from './strategies/jwt.stragtegy';
-import { JwtRefreshToken } from './strategies/refreshJwt.strategy';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAccessAuthGuard } from './guards/jwt-access-auth/jwt-access-auth.guard';
 import googleAuthConfig from './config/googleAuth.config';
 import { GoogleStrategy } from './strategies/googleAuth.strategy';
 import githubAuthConfig from './config/githubAuth.config';
 import { GithubStrategy } from './strategies/githubAuth.strategy';
+import { JwtRefreshToken } from './strategies/refreshJwt.strategy';
 
 @Module({
   imports: [
