@@ -20,6 +20,7 @@ import {
 import type { Cache } from 'cache-manager';
 import { TrafficModule } from './traffic/traffic.module';
 import { CategorieModule } from './categorie/categorie.module';
+import { CourseModule } from './course/course.module';
 
 // Custom Throttler Storage using Cache Manager
 @Injectable()
@@ -80,6 +81,7 @@ class ThrottlerCacheStorage implements ThrottlerStorage {
       ],
     }),
     CategorieModule,
+    CourseModule,
   ],
   controllers: [AppController],
   providers: [
